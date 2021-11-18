@@ -1,5 +1,6 @@
 import {Claimant} from "stellar-sdk";
 import {
+    getPredicateInformation,
     isPredicateClaimableAt,
     flattenPredicate,
     predicateFromHorizonResponse
@@ -136,7 +137,14 @@ describe("Test 'flattenPredicate'", () => {
             ), new Date(claimingAtDate)))
                 .toStrictEqual(Claimant.predicateUnconditional());
         });
-        test('expired and upcoming => expired', () => {
+        test('expired and unconditional => expired', () => {
+            expect(flattenPredicate(Claimant.predicateAnd(
+                expiredPredicate,
+                Claimant.predicateUnconditional()
+            ), new Date(claimingAtDate)))
+                .toStrictEqual(expiredPredicate);
+        });
+        test('expired and expiring in the future => expired', () => {
             expect(flattenPredicate(Claimant.predicateAnd(
                 expiredPredicate,
                 validBeforeClaimingAtPredicate
@@ -254,5 +262,60 @@ describe("Test 'flattenPredicate'", () => {
             ), new Date(claimingAtDate)))
                 .toStrictEqual(validBeforeClaimingAtPredicate);
         });
+    });
+});
+
+describe("Test 'getPredicateInformation", () => {
+    test('unconditional', () => {
+        expect(getPredicateInformation(Claimant.predicateUnconditional(), new Date(claimingAtDate)))
+            .toStrictEqual({
+                predicate: Claimant.predicateUnconditional(),
+                status: 'claimable',
+                validFrom: undefined,
+                validTo: undefined,
+            });
+    });
+    test('currently claimable within range',() => {
+        const predicate = Claimant.predicateAnd(
+            validAfterClaimingAtPredicate,
+            validBeforeClaimingAtPredicate
+        );
+        expect(getPredicateInformation(predicate, new Date(claimingAtDate)))
+            .toStrictEqual({
+                predicate: predicate,
+                status: 'claimable',
+                validTo: claimingAtDate+1000,
+                validFrom: claimingAtDate-1000,
+            })
+    });
+    test('expired predicate', () => {
+        expect(getPredicateInformation(expiredPredicate, new Date(claimingAtDate)))
+            .toStrictEqual({
+                predicate: expiredPredicate,
+                status: 'expired',
+                validTo: claimingAtDate-1000,
+                validFrom: undefined,
+            })
+    });
+    test('claimable in the future predicate', () => {
+        expect(getPredicateInformation(upcomingPredicate, new Date(claimingAtDate)))
+            .toStrictEqual({
+                predicate: upcomingPredicate,
+                status: 'upcoming',
+                validFrom: claimingAtDate+1000,
+                validTo: undefined,
+            })
+    });
+    test('expired but also claimable in the future predicate', () => {
+        expect(getPredicateInformation(Claimant.predicateOr(
+            upcomingPredicate,
+            expiredPredicate
+        ), new Date(claimingAtDate)))
+            .toStrictEqual({
+                predicate: upcomingPredicate,
+                status: 'upcoming',
+                validFrom: claimingAtDate+1000,
+                validTo: undefined,
+            })
     });
 });
