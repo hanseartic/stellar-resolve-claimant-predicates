@@ -1,0 +1,34 @@
+{
+  "name": "stellar-resolve-claimant-predicates",
+  "version": "0.0.1",
+  "description": "Evaluate stellar claimant predicates",
+  "type": "module",
+  "types": "evalPredicates.d.ts",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hanseartic/stellar-resolve-claimant-predicates.git"
+  },
+  "keywords": [
+    "stellar",
+    "xlm",
+    "blockchain",
+    "claimable-balance"
+  ],
+  "author": "hanseartic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hanseartic/stellar-resolve-claimant-predicates/issues"
+  },
+  "homepage": "https://github.com/hanseartic/stellar-resolve-claimant-predicates#readme",
+  "dependencies": {
+    "bignumber.js": "^9.0.1",
+    "stellar-sdk": "^9.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "jest": "^27.3.1"
+  }
+}
