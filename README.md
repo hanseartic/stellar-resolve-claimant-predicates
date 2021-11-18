@@ -1,6 +1,7 @@
 # Resolve stellar ClaimPredicates
 
 [![Test module](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/test.yml)
+[![Publish npm package](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/npm.yml/badge.svg)](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/npm.yml)
 
 On the stellar network [ClaimableBalances](https://stellar.github.io/js-stellar-base/Claimant.html) can used to send 
 funds to another wallet that does not have a trust-line established to a given asset, yet.
