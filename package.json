@@ -6,7 +6,7 @@
   "types": "evalPredicates.d.ts",
   "main": "evalPredicates.js",
   "scripts": {
-    "prepublish": "npm run test",
+    "prepublishOnly": "npm run test",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "repository": {

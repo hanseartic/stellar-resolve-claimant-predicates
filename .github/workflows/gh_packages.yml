@@ -2,11 +2,11 @@ name: Publish to GitHub Packages
 on:
   workflow_run:
     workflows: ["Test Tag"]
-    branches: [main]
     types: [completed]
 
 jobs:
   gh_packges:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       content: read
@@ -19,7 +19,6 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           # Defaults to the user or organization that owns the workflow file
           scope: '@hanseartic'
-      - run: npm install
       # Publish to GitHub Packages
       - run: npm publish
         env:
