@@ -14,17 +14,23 @@ import BigNumber from "bignumber.js";
 const predicateFromHorizonResponse = (horizonPredicate) => {
     let xdrPredicate = Claimant.predicateUnconditional();
 
-    if (horizonPredicate.abs_before) xdrPredicate = Claimant.predicateBeforeAbsoluteTime(horizonPredicate.abs_before);
-    if (horizonPredicate.rel_before) xdrPredicate = Claimant.predicateBeforeRelativeTime(horizonPredicate.rel_before);
+    if (horizonPredicate.abs_before) xdrPredicate = Claimant.predicateBeforeAbsoluteTime(
+        Date.parse(horizonPredicate.abs_before).toString()
+    );
+    if (horizonPredicate.rel_before) xdrPredicate = Claimant.predicateBeforeRelativeTime(
+        horizonPredicate.rel_before
+    );
     if (horizonPredicate.and) xdrPredicate = Claimant.predicateAnd(
         predicateFromHorizonResponse(horizonPredicate.and[0]),
         predicateFromHorizonResponse(horizonPredicate.and[1])
-    )
+    );
     if (horizonPredicate.or) xdrPredicate = Claimant.predicateOr(
         predicateFromHorizonResponse(horizonPredicate.or[0]),
         predicateFromHorizonResponse(horizonPredicate.or[1])
-    )
-    if (horizonPredicate.not) xdrPredicate = Claimant.predicateNot(predicateFromHorizonResponse(horizonPredicate.not))
+    );
+    if (horizonPredicate.not) xdrPredicate = Claimant.predicateNot(
+        predicateFromHorizonResponse(horizonPredicate.not)
+    );
 
     return xdrPredicate;
 }
@@ -102,9 +108,12 @@ const flattenPredicateAnd = (claimPredicate, claimingAtDate) => {
     const flatPredicates = claimPredicate.andPredicates().map(p => flattenPredicate(p, claimingAtDate));
     const claimablePredicates = flatPredicates.filter(p => isPredicateClaimableAt(p, claimingAtDate));
     if (claimablePredicates.length === 0) {
-        return getLatestBeforeAbsolutePredicate(flatPredicates.filter(isAbsBeforePredicate))
-            ??getEarliestNotBeforeAbsolutePredicate(flatPredicates.filter(isNotPredicate))
-            ??Claimant.predicateNot(Claimant.predicateUnconditional());
+        let relevant = getLatestBeforeAbsolutePredicate(flatPredicates.filter(isAbsBeforePredicate));
+        if (!relevant)
+            relevant = getEarliestNotBeforeAbsolutePredicate(flatPredicates.filter(isNotPredicate));
+        if (!relevant)
+            Claimant.predicateNot(Claimant.predicateUnconditional());
+        return relevant;
     } else if (claimablePredicates.length === 1) {
         return flatPredicates.find(p => !isPredicateClaimableAt(p));
     } else {
@@ -113,9 +122,12 @@ const flattenPredicateAnd = (claimPredicate, claimingAtDate) => {
         if (claimablePredicates.find(isUnconditionalPredicate)
             || validFromPredicates.length === 2
             || expiringPredicates.length === 2) {
-            return getEarliestBeforeAbsolutePredicate(expiringPredicates)
-                ?? getLatestNotBeforeAbsolutePredicate(validFromPredicates)
-                ?? Claimant.predicateUnconditional();
+                let relevant = getEarliestBeforeAbsolutePredicate(expiringPredicates);
+                if (!relevant)
+                    relevant = getLatestNotBeforeAbsolutePredicate(validFromPredicates);
+                if (!relevant)
+                    relevant =  Claimant.predicateUnconditional();
+                return relevant;
         }
     }
     return claimPredicate;
@@ -128,27 +140,34 @@ const flattenPredicateOr = (claimPredicate, claimingAtDate) => {
     }
     const claimablePredicates = predicates.filter(p => isPredicateClaimableAt(p, claimingAtDate));
     if (claimablePredicates.length === 0) {
-        return getLatestNotBeforeAbsolutePredicate(predicates.filter(isNotPredicate))
-            ??getLatestBeforeAbsolutePredicate(predicates.filter(isAbsBeforePredicate))
-            ??Claimant.predicateOr(...predicates);
+        let relevant = getLatestNotBeforeAbsolutePredicate(predicates.filter(isNotPredicate));
+        if (!relevant)
+            relevant = getLatestBeforeAbsolutePredicate(predicates.filter(isAbsBeforePredicate));
+        if (!relevant)
+            relevant = Claimant.predicateOr(...predicates);
+        return relevant;
     } else if (claimablePredicates.length === 1) {
         return claimablePredicates[0];
     } else {
-        const relevant = getLatestBeforeAbsolutePredicate(claimablePredicates)
-            ??getEarliestNotBeforeAbsolutePredicate(claimablePredicates);
+        let relevant = getLatestBeforeAbsolutePredicate(claimablePredicates);
+        if (!relevant)
+            relevant = getEarliestNotBeforeAbsolutePredicate(claimablePredicates);
         if (relevant) return relevant;
     }
     return Claimant.predicateUnconditional();
 }
 
 const isUnconditionalPredicate = (claimPredicate) => {
-    return claimPredicate.switch?.() === xdr.ClaimPredicateType.claimPredicateUnconditional();
+    if (claimPredicate.switch)
+        return claimPredicate.switch() === xdr.ClaimPredicateType.claimPredicateUnconditional();
 };
 const isAbsBeforePredicate = (claimPredicate) => {
-    return claimPredicate.switch?.() === xdr.ClaimPredicateType.claimPredicateBeforeAbsoluteTime();
+    if (claimPredicate.switch)
+        return claimPredicate.switch() === xdr.ClaimPredicateType.claimPredicateBeforeAbsoluteTime();
 };
 const isNotPredicate = (claimPredicate) => {
-    return claimPredicate.switch?.() === xdr.ClaimPredicateType.claimPredicateNot();
+    if (claimPredicate.switch)
+        return claimPredicate.switch() === xdr.ClaimPredicateType.claimPredicateNot();
 };
 const predicatesAreTheSameType = claimablePredicates => claimablePredicates
     .map(p => p.switch()).filter((value, index, self) =>
@@ -269,10 +288,13 @@ const getPredicateInformation = (claimPredicate, claimingAtDate) => {
         if (flatPredicate.switch() === xdr.ClaimPredicateType.claimPredicateAnd()) {
             let range = flatPredicate.andPredicates()
                 .map(getRange)
-                .reduce((p, c) => ({
-                    validFrom: c.validFrom??p.validFrom,
-                    validTo: c.validTo??p.validTo,
-                }), {});
+                .reduce((p, c) => {
+                    let validFrom = c.validFrom;
+                    if (!validFrom) validFrom = p.validFrom;
+                    let validTo = c.validTo;
+                    if (!validTo) validTo = p.validTo;
+                    return {validFrom, validTo,};
+                }, {});
             information.validTo = range.validTo;
             information.validFrom = range.validFrom;
         }

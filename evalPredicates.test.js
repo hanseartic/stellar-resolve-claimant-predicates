@@ -24,9 +24,9 @@ describe("Test 'predicateFromHorizonResponse'", () => {
             .toStrictEqual(Claimant.predicateUnconditional());
     })
     test("maps 'abs_before' claim predicate from horizon", () => {
-        const now = `${Date.now()}`;
-        expect(predicateFromHorizonResponse({abs_before: now}))
-            .toStrictEqual(Claimant.predicateBeforeAbsoluteTime(now));
+        const now = new Date();
+        expect(predicateFromHorizonResponse({abs_before: now.toISOString()}))
+            .toStrictEqual(Claimant.predicateBeforeAbsoluteTime(now.getTime().toString()));
     })
     test("maps 'rel_before' claim predicate from horizon", () => {
         expect(predicateFromHorizonResponse({rel_before: "3600"}))
@@ -181,7 +181,6 @@ describe("Test 'flattenPredicate'", () => {
             ), new Date(claimingAtDate)))
                 .toStrictEqual(validLater);
         });
-
         test('currently valid between expiring in future => both', () => {
             const predicate = Claimant.predicateAnd(
                 validBeforeClaimingAtPredicate,
@@ -189,6 +188,15 @@ describe("Test 'flattenPredicate'", () => {
             );
             expect(flattenPredicate(predicate, new Date(claimingAtDate)))
                 .toStrictEqual(predicate)
+        });
+        test('valid in the future expiring even later => upcoming', () => {
+            const expiringAfterClaimable = Claimant.predicateBeforeAbsoluteTime((claimingAtDate+1500).toString());
+            const predicate = Claimant.predicateAnd(
+                expiringAfterClaimable,
+                upcomingPredicate
+            );
+            expect(flattenPredicate(predicate, new Date(claimingAtDate)))
+                .toStrictEqual(upcomingPredicate);
         });
     });
 
