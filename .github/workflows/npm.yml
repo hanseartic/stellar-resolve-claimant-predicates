@@ -1,12 +1,11 @@
 name: Publish to npm
 on:
-  workflow_run:
-    workflows: ["Test Tag"]
-    types: [completed]
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   npm:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,6 +17,7 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
           # Defaults to the user or organization that owns the workflow file
+          scope: ''
       - run: npm install
       - run: npm publish --access public
         env:

@@ -1,7 +1,7 @@
 name: Publish to GitHub Packages
 on:
   workflow_run:
-    workflows: ["Test Tag"]
+    workflows: ["Publish to npm"]
     types: [completed]
 
 jobs:
@@ -16,8 +16,8 @@ jobs:
       # Setup .npmrc file to publish to GitHub Packages
       - uses: actions/setup-node@v2
         with:
+          node-version: '16.x'
           registry-url: 'https://npm.pkg.github.com'
-          # Defaults to the user or organization that owns the workflow file
           scope: '@hanseartic'
       - run: npm install
       # Publish to GitHub Packages
