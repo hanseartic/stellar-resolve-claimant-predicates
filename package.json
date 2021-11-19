@@ -1,6 +1,6 @@
 {
   "name": "stellar-resolve-claimant-predicates",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "description": "Evaluate stellar claimant predicates",
   "type": "module",
   "types": "evalPredicates.d.ts",
