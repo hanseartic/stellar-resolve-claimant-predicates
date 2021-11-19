@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Publish to GitHub Packages
 on:
   workflow_run:
     workflows: ["Test Tag"]
@@ -6,19 +6,21 @@ on:
     types: [completed]
 
 jobs:
-  npm:
+  gh_packges:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      content: read
+      packages: write
     steps:
       - uses: actions/checkout@v2
-      # Setup .npmrc file to publish to npm
+      # Setup .npmrc file to publish to GitHub Packages
       - uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com'
           # Defaults to the user or organization that owns the workflow file
+          scope: '@hanseartic'
       - run: npm install
-      - run: npm publish --access public
+      # Publish to GitHub Packages
+      - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
