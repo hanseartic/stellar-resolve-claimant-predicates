@@ -4,7 +4,7 @@ import {
     isPredicateClaimableAt,
     flattenPredicate,
     predicateFromHorizonResponse
-} from './evalPredicates.mjs';
+} from './evalPredicates';
 
 
 const claimingAtDate = Date.now();

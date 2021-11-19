@@ -142,13 +142,13 @@ const flattenPredicateOr = (claimPredicate, claimingAtDate) => {
 }
 
 const isUnconditionalPredicate = (claimPredicate) => {
-    return (claimPredicate.switch?claimPredicate.switch():undefined) === xdr.ClaimPredicateType.claimPredicateUnconditional();
+    return claimPredicate.switch?.() === xdr.ClaimPredicateType.claimPredicateUnconditional();
 };
 const isAbsBeforePredicate = (claimPredicate) => {
-    return (claimPredicate.switch?claimPredicate.switch():undefined) === xdr.ClaimPredicateType.claimPredicateBeforeAbsoluteTime();
+    return claimPredicate.switch?.() === xdr.ClaimPredicateType.claimPredicateBeforeAbsoluteTime();
 };
 const isNotPredicate = (claimPredicate) => {
-    return (claimPredicate.switch?claimPredicate.switch():undefined) === xdr.ClaimPredicateType.claimPredicateNot();
+    return claimPredicate.switch?.() === xdr.ClaimPredicateType.claimPredicateNot();
 };
 const predicatesAreTheSameType = claimablePredicates => claimablePredicates
     .map(p => p.switch()).filter((value, index, self) =>

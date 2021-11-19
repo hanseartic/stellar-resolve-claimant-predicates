@@ -1,9 +1,10 @@
 {
   "name": "stellar-resolve-claimant-predicates",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Evaluate stellar claimant predicates",
   "type": "module",
   "types": "evalPredicates.d.ts",
+  "main": "evalPredicates.js",
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
