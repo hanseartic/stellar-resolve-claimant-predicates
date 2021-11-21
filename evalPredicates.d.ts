@@ -10,6 +10,6 @@ export function getPredicateInformation(claimPredicate: xdr.ClaimPredicate, clai
 export interface PredicateInformation {
     status: 'claimable' | 'expired' | 'upcoming';
     predicate: xdr.ClaimPredicate,
-    validFromDate?: number,
-    validToDate?: number,
+    validFrom?: number,
+    validTo?: number,
 }
