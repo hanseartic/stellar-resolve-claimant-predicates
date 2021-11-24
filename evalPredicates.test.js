@@ -5,17 +5,19 @@ import {
     flattenPredicate,
     predicateFromHorizonResponse
 } from './evalPredicates';
+import BigNumber from "bignumber.js";
 
 
 const claimingAtDate = Date.now();
-// not claimable anymore since a second
-const expiredPredicate = Claimant.predicateBeforeAbsoluteTime((claimingAtDate-1000).toString());
-// claimable for another second
-const validBeforeClaimingAtPredicate = Claimant.predicateBeforeAbsoluteTime((claimingAtDate+1000).toString());
-// claimable since a second
-const validAfterClaimingAtPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtDate-1000).toString()));
-// will be claimable in a second
-const upcomingPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtDate+1000).toString()));
+const claimingAtSeconds = new BigNumber(claimingAtDate).idiv(1000).toNumber();
+// not claimable anymore since five seconds
+const expiredPredicate = Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds-5).toString());
+// claimable for another five seconds
+const validBeforeClaimingAtPredicate = Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds+5).toString());
+// claimable since five seconds
+const validAfterClaimingAtPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds-5).toString()));
+// will be claimable in five seconds
+const upcomingPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds+5).toString()));
 
 
 describe("Test 'predicateFromHorizonResponse'", () => {
@@ -25,8 +27,9 @@ describe("Test 'predicateFromHorizonResponse'", () => {
     })
     test("maps 'abs_before' claim predicate from horizon", () => {
         const now = new Date();
+        const nowSeconds = parseInt(now.getTime()/1000);
         expect(predicateFromHorizonResponse({abs_before: now.toISOString()}))
-            .toStrictEqual(Claimant.predicateBeforeAbsoluteTime(now.getTime().toString()));
+            .toStrictEqual(Claimant.predicateBeforeAbsoluteTime(nowSeconds.toString()));
     })
     test("maps 'rel_before' claim predicate from horizon", () => {
         expect(predicateFromHorizonResponse({rel_before: "3600"}))
@@ -54,7 +57,6 @@ describe("Test 'predicateFromHorizonResponse'", () => {
 
 describe("Test 'isPredicateClaimableAt'", () => {
     const now = (() => Date.now())();
-    const afterNow = now + 1000;
     test('unconditional is claimable', () => {
         expect(isPredicateClaimableAt(Claimant.predicateUnconditional()))
             .toBe(true)
@@ -66,15 +68,15 @@ describe("Test 'isPredicateClaimableAt'", () => {
             .toBe(true);
     });
     test('relative to not now is not claimable', () => {
-        expect(isPredicateClaimableAt(Claimant.predicateNot(Claimant.predicateBeforeRelativeTime("3600")), new Date(claimingAtDate+3601000)))
+        expect(isPredicateClaimableAt(Claimant.predicateNot(Claimant.predicateBeforeRelativeTime("3600")), new Date((claimingAtSeconds+3601)*1000)))
             .toBe(true);
     });
     test('relative to hour in the future is not claimable a second after the hour', () => {
-        expect(isPredicateClaimableAt(Claimant.predicateBeforeRelativeTime("3600"), new Date(claimingAtDate+3601000)))
+        expect(isPredicateClaimableAt(Claimant.predicateBeforeRelativeTime("3600"), new Date((claimingAtSeconds+3601)*1000)))
             .toBe(false);
     });
     test('relative to hour in the future is claimable a second after the hour', () => {
-        expect(isPredicateClaimableAt(Claimant.predicateNot(Claimant.predicateBeforeRelativeTime("3600")), new Date(claimingAtDate+3601000)))
+        expect(isPredicateClaimableAt(Claimant.predicateNot(Claimant.predicateBeforeRelativeTime("3600")), new Date((claimingAtSeconds+3601)*1000)))
             .toBe(true);
     });
     test("'before absolute' is claimable before given time", () => {
@@ -124,7 +126,7 @@ describe("Test 'flattenPredicate'", () => {
                 .toStrictEqual(expiredPredicate);
         });
         test('before relative', () => {
-            expect(flattenPredicate(Claimant.predicateBeforeRelativeTime("1"), new Date(claimingAtDate)))
+            expect(flattenPredicate(Claimant.predicateBeforeRelativeTime("5"), new Date(claimingAtDate)))
                 .toStrictEqual(validBeforeClaimingAtPredicate);
         });
     });
@@ -166,7 +168,7 @@ describe("Test 'flattenPredicate'", () => {
                 .toStrictEqual(validBeforeClaimingAtPredicate);
         });
         test('expiring in future with different dates => earlier expiry', () => {
-            const expiringEarlier = Claimant.predicateBeforeAbsoluteTime((claimingAtDate+500).toString());
+            const expiringEarlier = Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds+2).toString());
             expect(flattenPredicate(Claimant.predicateAnd(
                 validBeforeClaimingAtPredicate,
                 expiringEarlier
@@ -174,7 +176,7 @@ describe("Test 'flattenPredicate'", () => {
                 .toStrictEqual(expiringEarlier);
         });
         test('valid since different timestamp => later validity', () => {
-            const validLater = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtDate-500).toString()));
+            const validLater = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds-2).toString()));
             expect(flattenPredicate(Claimant.predicateAnd(
                 validAfterClaimingAtPredicate,
                 validLater
@@ -235,7 +237,7 @@ describe("Test 'flattenPredicate'", () => {
                .toStrictEqual(upcomingPredicate);
         });
         test('expired or expired => later expiry', () => {
-            const earlierExpiredPredicate = Claimant.predicateBeforeAbsoluteTime((claimingAtDate-1500).toString())
+            const earlierExpiredPredicate = Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds-10).toString())
             expect(flattenPredicate(Claimant.predicateOr(
                 earlierExpiredPredicate,
                 expiredPredicate
@@ -255,7 +257,7 @@ describe("Test 'flattenPredicate'", () => {
                .toStrictEqual(validBeforeClaimingAtPredicate);
         });
         test('valid or valid (both having start-date) => earlier validity', () => {
-            const laterValidAfterClaimingAtPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtDate - 500).toString()));
+            const laterValidAfterClaimingAtPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds-2).toString()));
             expect(flattenPredicate(Claimant.predicateOr(
                 validAfterClaimingAtPredicate,
                 laterValidAfterClaimingAtPredicate
@@ -263,7 +265,7 @@ describe("Test 'flattenPredicate'", () => {
                 .toStrictEqual(validAfterClaimingAtPredicate);
         });
         test('valid or valid (both expiring in future) => later expiry', () => {
-            const earlierExpiryDate = Claimant.predicateBeforeAbsoluteTime((claimingAtDate + 500).toString());
+            const earlierExpiryDate = Claimant.predicateBeforeAbsoluteTime((claimingAtSeconds+2).toString());
             expect(flattenPredicate(Claimant.predicateOr(
                 validBeforeClaimingAtPredicate,
                 earlierExpiryDate
@@ -292,8 +294,8 @@ describe("Test 'getPredicateInformation", () => {
             .toStrictEqual({
                 predicate: predicate,
                 status: 'claimable',
-                validTo: claimingAtDate+1000,
-                validFrom: claimingAtDate-1000,
+                validTo: claimingAtSeconds+5,
+                validFrom: claimingAtSeconds-5,
             })
     });
     test('expired predicate', () => {
@@ -301,7 +303,7 @@ describe("Test 'getPredicateInformation", () => {
             .toStrictEqual({
                 predicate: expiredPredicate,
                 status: 'expired',
-                validTo: claimingAtDate-1000,
+                validTo: claimingAtSeconds-5,
                 validFrom: undefined,
             })
     });
@@ -310,7 +312,7 @@ describe("Test 'getPredicateInformation", () => {
             .toStrictEqual({
                 predicate: upcomingPredicate,
                 status: 'upcoming',
-                validFrom: claimingAtDate+1000,
+                validFrom: claimingAtSeconds+5,
                 validTo: undefined,
             })
     });
@@ -322,7 +324,7 @@ describe("Test 'getPredicateInformation", () => {
             .toStrictEqual({
                 predicate: upcomingPredicate,
                 status: 'upcoming',
-                validFrom: claimingAtDate+1000,
+                validFrom: claimingAtSeconds+5,
                 validTo: undefined,
             })
     });

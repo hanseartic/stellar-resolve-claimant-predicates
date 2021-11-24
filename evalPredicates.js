@@ -15,7 +15,7 @@ const predicateFromHorizonResponse = (horizonPredicate) => {
     let xdrPredicate = Claimant.predicateUnconditional();
 
     if (horizonPredicate.abs_before) xdrPredicate = Claimant.predicateBeforeAbsoluteTime(
-        Date.parse(horizonPredicate.abs_before).toString()
+        new BigNumber(Date.parse(horizonPredicate.abs_before)).idiv(1000).toString()
     );
     if (horizonPredicate.rel_before) xdrPredicate = Claimant.predicateBeforeRelativeTime(
         horizonPredicate.rel_before
@@ -42,6 +42,7 @@ const predicateFromHorizonResponse = (horizonPredicate) => {
  * @returns {boolean}
  */
 const isPredicateClaimableAt = (claimPredicate, claimingAtDate = new Date()) => {
+    const claimingAtSeconds = new BigNumber(claimingAtDate.getTime()).idiv(1000).toNumber();
     switch (claimPredicate.switch()) {
         case xdr.ClaimPredicateType.claimPredicateUnconditional():
             return true;
@@ -58,13 +59,15 @@ const isPredicateClaimableAt = (claimPredicate, claimingAtDate = new Date()) => 
             return !isPredicateClaimableAt(claimPredicate.notPredicate(), claimingAtDate);
 
         case xdr.ClaimPredicateType.claimPredicateBeforeAbsoluteTime():
-            return new BigNumber(claimPredicate.absBefore().toString()).isGreaterThan(claimingAtDate.getTime());
+            return new BigNumber(claimPredicate.absBefore().toString())
+                .isGreaterThan(claimingAtSeconds);
 
         case xdr.ClaimPredicateType.claimPredicateBeforeRelativeTime():
             // add the relative time given in seconds to current timestamp for estimation
-            const absPredicateTime = new BigNumber(claimPredicate.relBefore()).times(1000)
-                .plus(Date.now());
-            return absPredicateTime.isGreaterThan(claimingAtDate.getTime());
+            const absPredicateTime = new BigNumber(claimPredicate.relBefore())
+                .plus(new BigNumber(Date.now()).idiv(1000));
+            return absPredicateTime
+                .isGreaterThan(claimingAtSeconds);
     }
 
     return true;
@@ -78,6 +81,7 @@ const isPredicateClaimableAt = (claimPredicate, claimingAtDate = new Date()) => 
  * @returns {xdr.ClaimPredicate}
  */
 const flattenPredicate = (claimPredicate, claimingAtDate = new Date()) => {
+    const claimAtSeconds = new BigNumber(claimingAtDate.getTime()).idiv(1000).toNumber();
     switch(claimPredicate.switch()) {
         case xdr.ClaimPredicateType.claimPredicateUnconditional():
             break;
@@ -90,8 +94,8 @@ const flattenPredicate = (claimPredicate, claimingAtDate = new Date()) => {
 
         case xdr.ClaimPredicateType.claimPredicateBeforeRelativeTime():
             return flattenPredicate(Claimant.predicateBeforeAbsoluteTime(
-                new BigNumber(claimPredicate.relBefore()).times(1000)
-                    .plus(claimingAtDate.getTime())
+                new BigNumber(claimPredicate.relBefore())
+                    .plus(claimAtSeconds)
                     .toString()
             ), claimingAtDate);
 
