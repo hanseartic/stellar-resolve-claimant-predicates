@@ -1,8 +1,8 @@
 name: Publish to npm
 on:
   push:
-    tags:
-      - "v*.*.*"
+    branches:
+      - main
 
 jobs:
   npm:
@@ -19,6 +19,14 @@ jobs:
           # Defaults to the user or organization that owns the workflow file
           scope: ''
       - run: npm install
+      - name: Get current package version
+        run: echo "NPM_VERSION=$(npm ls --json|jq -r .version)" >> $GITHUB_ENV
+      - name: Tag branch with current package version
+        uses: negz/create-tag@v1
+        with:
+          version: "v${{ env.NPM_VERSION }}"
+          message: "v${{ env.NPM_VERSION }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
