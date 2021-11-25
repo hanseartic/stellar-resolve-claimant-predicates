@@ -299,16 +299,19 @@ const getPredicateInformation = (claimPredicate, claimingAtDate) => {
                     if (!validTo) validTo = p.validTo;
                     return {validFrom, validTo,};
                 }, {});
-            information.validTo = range.validTo;
             information.validFrom = range.validFrom;
+            information.validTo   = range.validTo;
+        } else {
+            information.validFrom = validFrom;
+            information.validTo   = validTo;
         }
     } else {
         if (validTo) {
-            information.validTo = validTo;
-            information.status = 'expired';
+            information.validTo   = validTo;
+            information.status    = 'expired';
         } else if (validFrom) {
             information.validFrom = validFrom;
-            information.status = 'upcoming';
+            information.status    = 'upcoming';
         }
     }
     return information;

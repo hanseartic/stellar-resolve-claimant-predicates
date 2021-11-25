@@ -121,6 +121,10 @@ describe("Test 'flattenPredicate'", () => {
             expect(flattenPredicate(Claimant.predicateNot(Claimant.predicateUnconditional())))
                 .toStrictEqual(Claimant.predicateNot(Claimant.predicateUnconditional()));
         });
+        test('valid since', () => {
+            expect(flattenPredicate(validAfterClaimingAtPredicate))
+                .toStrictEqual(validAfterClaimingAtPredicate);
+        });
         test('before absolute', () => {
             expect(flattenPredicate(expiredPredicate, new Date(claimingAtDate)))
                 .toStrictEqual(expiredPredicate);
@@ -306,6 +310,15 @@ describe("Test 'getPredicateInformation", () => {
                 validTo: claimingAtSeconds-5,
                 validFrom: undefined,
             })
+    });
+    test('claimable since 5 seconds', () => {
+        expect(getPredicateInformation(validAfterClaimingAtPredicate, new Date(claimingAtDate)))
+            .toStrictEqual({
+                predicate: validAfterClaimingAtPredicate,
+                status: 'claimable',
+                validFrom: claimingAtSeconds-5,
+                validTo: undefined,
+            });
     });
     test('claimable in the future predicate', () => {
         expect(getPredicateInformation(upcomingPredicate, new Date(claimingAtDate)))
