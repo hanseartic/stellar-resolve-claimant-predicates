@@ -1,7 +1,8 @@
 # Resolve stellar ClaimPredicates
+[![Tests](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/test.yml) ![GitHub package.json version (develop)](https://img.shields.io/github/package-json/v/hanseartic/stellar-resolve-claimant-predicates/develop?label=%40[develop])
 
-[![Tests](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/test.yml)
-[![Publish to npm](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/npm.yml/badge.svg?branch=main&event=push)](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/npm.yml)
+[![Publish to npm](https://github.com/hanseartic/stellar-resolve-claimant-predicates/actions/workflows/npm.yml/badge.svg?branch=main&event=push)](https://www.npmjs.com/package/stellar-resolve-claimant-predicates) ![NPM version](https://img.shields.io/npm/v/stellar-resolve-claimant-predicates?label=%40)
+
 
 On the stellar network [ClaimableBalances](https://stellar.github.io/js-stellar-base/Claimant.html) can used to send 
 funds to another wallet that does not have a trust-line established to a given asset, yet.
@@ -42,18 +43,18 @@ When querying horizon for claimable balances, the response is less easy to parse
           // have the xdr.ClaimPredicates available inside the response here 
       });
 
-Will replace the `Horizon.Predicate` data with `xdr.ClaimPredicate` data inside the response. 
+The code above will replace the `Horizon.Predicate` data with `xdr.ClaimPredicate` data inside the response. 
 
 ### Getting information on a certain predicate
 The `PredicateInformation` holds the information necessary to determine if a predicate can be claimed.
-The `status` field makes determination easy. `validFromDate` & `validToDate` only hold values of given
-the original predicate.
+The `status` field makes determination easy. `validFrom` & `validTo` only hold values if the original predicate defined
+'before' (i.e. `predicateBeforeAbsoluteTime(...)`) or 'after' (i.e. `predicateNot(predicateBeforeAbsoluteTime(...))`) times.
 
     {
         status: 'claimable' | 'expired' | 'upcoming';
         predicate: xdr.ClaimPredicate,
-        validFromDate?: number,
-        validToDate?: number,
+        validFrom?: number,
+        validTo?: number,
     }
 
 To retrieve the information object simply call `getPredicateInformation()` with the predicate and optionally
@@ -69,7 +70,8 @@ to three different predicates:
 
     const beginOfClaimWindowPredicate = Claimant.predicateNot(Claimant.predicateBeforeAbsoluteTime("1637017200"));
     const endOfClaimWindowPredicate = Claimant.predicateBeforeAbsoluteTime("1637020800");
-    // this defines a claimable time window of an hour
+
+    // this defines a claimable time window of one hour
     const claimPredicate = Claimant.predicateAnd(beginOfClaimWindowPredicate, endOfClaimWindowPredicate);
 
     // a second before the claimable time window the predicate will be resolved only to the starting time 
@@ -78,7 +80,8 @@ to three different predicates:
     // within the claimable time window the predicate will be resoved as is
     flattenPredicate(claimPredicate, new Date(1637019000)) === claimPredicate;
 
-    // a second after the claimable time window the predicate will be resolved to the 
+    // a second after the claimable time window the predicate will be resolved to the predicate describing the end
+    // of the claimable window only, as the start-time is irrelevant for an expired predicate
     flattenPredicate(claimPredicate, new Date(1637020801)) === endOfClaimWindowPredicate;
 
 
