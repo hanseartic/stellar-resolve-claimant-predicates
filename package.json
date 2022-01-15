@@ -1,6 +1,6 @@
 {
   "name": "stellar-resolve-claimant-predicates",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Evaluate stellar claimant predicates",
   "type": "module",
   "types": "evalPredicates.d.ts",
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/hanseartic/stellar-resolve-claimant-predicates#readme",
   "dependencies": {
     "bignumber.js": "^9.0.1",
-    "stellar-sdk": "^9.1.0"
+    "stellar-sdk": "^10.0.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
