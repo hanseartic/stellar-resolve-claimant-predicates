@@ -56,7 +56,6 @@ describe("Test 'predicateFromHorizonResponse'", () => {
 });
 
 describe("Test 'isPredicateClaimableAt'", () => {
-    const now = (() => Date.now())();
     test('unconditional is claimable', () => {
         expect(isPredicateClaimableAt(Claimant.predicateUnconditional()))
             .toBe(true)
@@ -108,7 +107,7 @@ describe("Test 'isPredicateClaimableAt'", () => {
             .toBe(true);
         expect(isPredicateClaimableAt(Claimant.predicateOr(Claimant.predicateNot(Claimant.predicateUnconditional()), Claimant.predicateNot(Claimant.predicateUnconditional()))))
             .toBe(false);
-    })
+    });
 });
 
 describe("Test 'flattenPredicate'", () => {
