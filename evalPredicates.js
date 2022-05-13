@@ -1,6 +1,5 @@
 import {
     Claimant,
-    Horizon,
     xdr
 } from "stellar-sdk";
 import BigNumber from "bignumber.js";
