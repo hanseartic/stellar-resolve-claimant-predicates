@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "declaration": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "evalPredicates.test.ts",
+    "evalPredicates.ts"
+  ]
+}

@@ -7,7 +7,6 @@ import {
 } from './evalPredicates';
 import BigNumber from "bignumber.js";
 
-
 const claimingAtDate = Date.now();
 const claimingAtSeconds = new BigNumber(claimingAtDate).idiv(1000).toNumber();
 // not claimable anymore since five seconds
@@ -27,7 +26,7 @@ describe("Test 'predicateFromHorizonResponse'", () => {
     })
     test("maps 'abs_before' claim predicate from horizon", () => {
         const now = new Date();
-        const nowSeconds = parseInt(now.getTime()/1000);
+        const nowSeconds = new BigNumber(now.getTime()).idiv(1000);
         expect(predicateFromHorizonResponse({abs_before: now.toISOString()}))
             .toStrictEqual(Claimant.predicateBeforeAbsoluteTime(nowSeconds.toString()));
     })
