@@ -1,4 +1,7 @@
 .github
 .gitignore
+dist/*.test.*
+jest.config.cjs
 node_modules
 package-lock.json
+tsconfig.json
