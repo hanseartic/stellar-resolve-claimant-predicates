@@ -15,6 +15,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/hanseartic/stellar-resolve-claimant-predicates.git"
   },
+  "funding": "https://fund.hanseartic.de/#stellar-resolve-claimant-predicates",
   "keywords": [
     "stellar",
     "xlm",
