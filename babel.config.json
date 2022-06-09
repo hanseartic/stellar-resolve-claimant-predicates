@@ -2,9 +2,10 @@
   "presets": [
     ["@babel/preset-env", {}],
     ["@babel/preset-typescript", {
-      "allowNamespaces": true
+      "allowNamespaces": true,
+      "allExtensions": true
     }]
   ],
-  "sourceMaps": "inline",
+  "sourceMaps": true,
   "plugins": []
 }
