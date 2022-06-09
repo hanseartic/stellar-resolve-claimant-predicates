@@ -1,7 +1,7 @@
 .github
 .gitignore
 dist/*.test.*
-jest.config.cjs
+jest.config.js
 node_modules
 package-lock.json
 tsconfig.json

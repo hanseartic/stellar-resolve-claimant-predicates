@@ -9,7 +9,6 @@
     "esModuleInterop": true
   },
   "include": [
-    "evalPredicates.test.ts",
-    "evalPredicates.ts"
+    "./src/**/*"
   ]
 }
