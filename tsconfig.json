@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
+    "target": "es6",
     "outDir": "./dist",
     "moduleResolution": "node",
     "declaration": true,
+    "emitDeclarationOnly": true,
+    "isolatedModules": true,
     "esModuleInterop": true
   },
   "include": [

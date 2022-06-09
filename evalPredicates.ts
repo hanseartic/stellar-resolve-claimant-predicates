@@ -330,5 +330,5 @@ export {
     getPredicateInformation,
     isPredicateClaimableAt,
     predicateFromHorizonResponse,
-    PredicateInformation,
+    type PredicateInformation,
 };
