@@ -1,6 +1,6 @@
 {
   "name": "stellar-resolve-claimant-predicates",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Evaluate stellar claimant predicates",
   "types": "dist/evalPredicates.d.ts",
   "main": "dist/evalPredicates.js",
